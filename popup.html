@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            width: 350px;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: white;
+            margin: 0;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        h2 {
+            margin: 0 0 16px 0;
+            color: #3ea6ff;
+            text-align: center;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .status {
+            background: #181818;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            border-left: 4px solid #3ea6ff;
+        }
+        
+        .instructions {
+            background: #181818;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        
+        .step-number {
+            background: #3ea6ff;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .current-sequence {
+            background: #181818;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        
+        .sequence-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #202020;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .no-sequence {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            background: #3ea6ff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #3291e6;
+        }
+        
+        .clear-btn {
+            background: #ff3b30;
+        }
+        
+        .clear-btn:hover {
+            background: #e02a20;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #303030;
+            color: #888;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎬 YouTube Sequencer</h2>
+        
+        <div class="status">
+            <strong>Status:</strong> Active
+            <br>
+            <small>Navigate to a YouTube channel to create sequences</small>
+        </div>
+        
+        <div class="current-sequence">
+            <strong>Current Sequence:</strong>
+            <div id="sequence-list">
+                <div class="no-sequence">No sequence created yet</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Go to any YouTube channel page</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>Select videos using checkboxes</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>Create and save your sequence</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>Play videos in your custom order</div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="clearSequence" class="action-btn clear-btn">Clear Sequence</button>
+            <button id="openYouTube" class="action-btn">Open YouTube</button>
+        </div>
+        
+        <div class="footer">
+            Works on YouTube channel pages and videos
+        </div>
+    </div>
+    
+    <script>
+        // Load current sequence
+        chrome.storage.local.get(['videoQueue'], (result) => {
+            const sequenceList = document.getElementById('sequence-list');
+            const videoQueue = result.videoQueue || [];
+            
+            if (videoQueue.length === 0) {
+                sequenceList.innerHTML = '<div class="no-sequence">No sequence created yet</div>';
+            } else {
+                let html = '';
+                videoQueue.forEach((video, index) => {
+                    html += `
+                        <div class="sequence-item">
+                            <span style="color: #3ea6ff; margin-right: 8px;">${index + 1}.</span>
+                            <span style="flex: 1;">${video.title.substring(0, 40)}${video.title.length > 40 ? '...' : ''}</span>
+                        </div>
+                    `;
+                });
+                sequenceList.innerHTML = html;
+            }
+        });
+        
+        // Clear sequence button
+        document.getElementById('clearSequence').addEventListener('click', () => {
+            chrome.storage.local.set({ videoQueue: [] }, () => {
+                document.getElementById('sequence-list').innerHTML = 
+                    '<div class="no-sequence">Sequence cleared</div>';
+            });
+        });
+        
+        // Open YouTube button
+        document.getElementById('openYouTube').addEventListener('click', () => {
+            chrome.tabs.create({ url: 'https://www.youtube.com' });
+        });
+    </script>
+</body>
+</html>
